@@ -1,0 +1,42 @@
+# sbdark
+#
+# The dark terminal palette. Slots are annotated with the token name they
+# carry in zsh/palette.zsh, so the shell and the terminal stay in step.
+
+background = #000000
+foreground = #ffffff
+
+# Softer variant if pure white on pure black is too harsh - swap these in:
+# background = #1a1a1a
+# foreground = #e6e6e6
+
+# red, with the glyph under the block cursor knocked out in white
+cursor-color = #dc2626
+cursor-text = #ffffff
+
+selection-background = #264f78
+selection-foreground = #ffffff
+
+# Normal colours. Slots 4 and 6 are the two that plain (non-bold) ls output
+# reaches, so they carry the colours ls needs: 4 folders, 6 executables.
+# 5 is symlinks. 0 black, 1 red, 2 green, 3 yellow, 7 inactive.
+palette = 0=#262626
+palette = 1=#dc2626
+palette = 2=#16a34a
+palette = 3=#ca8a04
+palette = 4=#b1b9f9
+palette = 5=#827dbd
+palette = 6=#ff7814
+palette = 7=#999999
+
+# Bright colours: the status set.
+# 8 subtle, 9 error, 10 success, 11 warning, 12 blue, 13 purple,
+# 14 cyan, 15 text.
+palette = 8=#505050
+palette = 9=#ff6b80
+palette = 10=#4eba65
+palette = 11=#ffc107
+palette = 12=#93a5ff
+palette = 13=#af87ff
+palette = 14=#0891b2
+palette = 15=#ffffff

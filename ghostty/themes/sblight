@@ -1,0 +1,33 @@
+# sblight
+#
+# The light counterpart to sbdark, for `theme = light:sblight,dark:sbdark`.
+
+background = #ffffff
+foreground = #000000
+
+cursor-color = #dc2626
+cursor-text = #ffffff
+
+selection-background = #b4d5ff
+selection-foreground = #000000
+
+# Normal: 0 text, 1 error, 2 success, 3 warning,
+# 4 blue, 5 purple, 6 teal, 7 inactive
+palette = 0=#000000
+palette = 1=#ab2b3f
+palette = 2=#2c7a39
+palette = 3=#966c1e
+palette = 4=#5769f7
+palette = 5=#8700ff
+palette = 6=#006666
+palette = 7=#666666
+
+# Bright: 8 subtle, 9-13 the saturated set, 14 cyan, 15 inverse text
+palette = 8=#afafaf
+palette = 9=#dc2626
+palette = 10=#16a34a
+palette = 11=#ca8a04
+palette = 12=#6a9bcc
+palette = 13=#827dbd
+palette = 14=#009999
+palette = 15=#ffffff
