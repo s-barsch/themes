@@ -16,15 +16,17 @@
 #     fetch to keep the numbers honest -- see _bureau_maybe_fetch below
 #   - the ~ is always warning amber; it is the thing carrying the "you have
 #     uncommitted work" signal, so the branch name does not have to
-#   - branch name is not bold, and says one thing: the state of the tree
-#       success = clean
-#       text    = uncommitted changes -- plain white, because the amber ~
-#                 next to it already says it
-#   - drift from a remote is carried by the arrows, not the branch name: the
-#     1↑ / 1↓ counts, and the ↓ in the base bracket, are the only things
-#     that go error red. A name that changed colour could only ever say
-#     "something is out of sync"; the arrow that turns red says which way
-#     and by how much, and leaves the name free to keep reporting the tree.
+#   - branch name is not bold, and is green on exactly one condition:
+#       success = clean and in sync -- nothing to commit, nothing to push or
+#                 pull, and the base has not moved. Green is the all-clear,
+#                 so anything at all to deal with takes it away.
+#       text    = everything else -- uncommitted changes, or an arrow of any
+#                 kind. Plain white, because the amber ~ and the red arrows
+#                 next to it already say which it is.
+#   - how far out of sync you are is carried by the arrows alone: the 1↑ / 1↓
+#     counts, and the ↓ in the base bracket, are the only things that go
+#     error red. The name says there is something to deal with; the arrow
+#     says which way and by how much.
 #   - the $ is a %
 #
 # Colours come from $CC (palette.zsh); the literals are the same
@@ -168,10 +170,11 @@ bureau_git_prompt() {
     fi
   fi
 
-  # The name tracks the tree and nothing else: dirty drops the green. Drift
-  # rides on the arrows below, so the two signals never overwrite each other.
+  # Green is the all-clear and nothing less earns it: uncommitted work or an
+  # arrow of any kind drops the name to white. Which one it is, and how far,
+  # is left to the amber ~ and the red arrows -- the name only says "look".
   local colour="$_BUREAU_OK"
-  (( dirty )) && colour="$_BUREAU_TEXT"
+  (( dirty || ahead || behind || behind_base )) && colour="$_BUREAU_TEXT"
 
   local inner="%F{$colour}${branch:gs/%/%%}%f"   # a % in a branch is not an escape
   (( ahead ))  && inner+=" %F{$_BUREAU_OFF}${ahead}↑%f"
