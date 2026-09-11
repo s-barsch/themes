@@ -65,6 +65,33 @@ Ghostty-specific. `./install.sh --no-ghostty` gives you the shell styling on
 any terminal; set the 16 palette slots by hand from `ghostty/themes/sbdark`
 and the rest matches.
 
+## The git segment
+
+```
+name@host ~/code/sacer                  [feature 1↑ ~] [main 3↓]
+```
+
+The first bracket is where you are: the branch, how far it is ahead of or
+behind its upstream, and a `~` if the tree is dirty. The second appears only
+when you are off the base branch and the base has moved on without you — time
+to rebase. Green is clean and in sync, white means uncommitted work, red means
+you have drifted from a remote.
+
+Those counts are read from `refs/remotes/origin/*`, and **nothing in git
+refreshes those on its own** — left alone, `[main 3↓]` would only ever be as
+true as your last `git fetch`. So the prompt fetches for itself: at most once
+every five minutes it kicks off a detached `git fetch --prune` and carries
+straight on drawing. It never blocks, never holds the terminal, and never
+prompts for credentials; a fetch that lands shows up on the *next* prompt.
+
+Set `_BUREAU_FETCH_INTERVAL` in `~/.zshrc`, ahead of the `init.zsh` block, to
+change the interval — or to `0` to switch the fetching off and go back to
+counts that move only when you fetch by hand.
+
+`git maintenance start` will not do this job, incidentally: its prefetch task
+deliberately writes to `refs/prefetch/remotes/origin/*` and leaves the
+remote-tracking refs alone, so the prompt would never see a thing it fetched.
+
 ## How the colours map
 
 Prompt colours are emitted as literal truecolor escapes, so they appear as soon

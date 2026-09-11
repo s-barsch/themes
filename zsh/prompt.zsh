@@ -11,6 +11,9 @@
 #   - ~ marks a dirty tree (staged, unstaged or untracked)
 #   - off the base branch, a second bracket appears when the base has moved
 #     on without you: [feature 1↑] [main 3↓] -- time to rebase
+#   - every count is read from refs/remotes/origin/*, which nothing in git
+#     refreshes on its own, so the segment runs its own throttled background
+#     fetch to keep the numbers honest -- see _bureau_maybe_fetch below
 #   - the ~ is always warning amber; it is the thing carrying the "you have
 #     uncommitted work" signal, so the branch name does not have to
 #   - branch name is not bold, and is coloured by state:
@@ -70,12 +73,72 @@ _bureau_base_ref() {
   print -r -- "$ref"
 }
 
+# Everything the segment prints is read out of refs/remotes/origin/*, and
+# nothing in git refreshes those by itself: [main 3↓] is only ever as true as
+# your last fetch. So once every $_BUREAU_FETCH_INTERVAL seconds the prompt
+# kicks off a detached fetch and carries straight on drawing. What is on screen
+# is therefore always the state the *previous* fetch left behind -- a fetch that
+# lands now shows up on the next prompt. That one-prompt lag is the price of
+# never blocking the prompt on the network, and it is the right trade: a number
+# that is five minutes stale beats a prompt that hangs on a dead VPN.
+#
+# `git maintenance start` is not a substitute. Its prefetch task deliberately
+# writes to refs/prefetch/remotes/origin/* and leaves the remote-tracking refs
+# untouched, precisely so it never moves refs under you -- which means the
+# prompt would never see anything it fetched.
+#
+# Set _BUREAU_FETCH_INTERVAL=0 in ~/.zshrc, ahead of init.zsh, to turn it off.
+: ${_BUREAU_FETCH_INTERVAL:=300}
+
+zmodload -F zsh/stat b:zstat
+zmodload zsh/datetime
+
+# Which repos have an origin worth fetching from. Cached because a repo with no
+# remote never grows a stamp file, so without this we would go and ask git about
+# it again on every single prompt.
+typeset -gA _BUREAU_FETCH_REMOTE
+
+_bureau_maybe_fetch() {
+  (( _BUREAU_FETCH_INTERVAL > 0 )) || return
+
+  # Absolute, not `--git-dir`: at a repo root that answers the bare relative
+  # ".git", which would collide in the caches below across every repo you own.
+  local gitdir
+  gitdir="$(command git rev-parse --absolute-git-dir 2>/dev/null)" || return
+
+  if (( ! ${+_BUREAU_FETCH_REMOTE[$gitdir]} )); then
+    _BUREAU_FETCH_REMOTE[$gitdir]=0
+    [[ -n "$(command git config --get remote.origin.url 2>/dev/null)" ]] && \
+      _BUREAU_FETCH_REMOTE[$gitdir]=1
+  fi
+  (( _BUREAU_FETCH_REMOTE[$gitdir] )) || return
+
+  # The throttle hangs off our own stamp rather than FETCH_HEAD, because a fetch
+  # that fails -- offline, VPN down, remote deleted -- leaves FETCH_HEAD alone,
+  # and we would then spawn another one on every prompt for as long as the
+  # network stayed broken. The stamp records the attempt, not the success.
+  local stamp="$gitdir/bureau-fetch-stamp" last=0
+  [[ -f "$stamp" ]] && last=$(zstat +mtime "$stamp" 2>/dev/null)
+  (( EPOCHSECONDS - last < _BUREAU_FETCH_INTERVAL )) && return
+  command touch "$stamp" 2>/dev/null || return
+
+  # Detached in its own subshell so zsh never lists it as a job or reports on
+  # it, with stdin closed and prompting off: this must not be able to stop and
+  # ask the terminal for a passphrase behind the prompt's back. If it cannot
+  # authenticate it dies quietly and the stamp holds it off for another
+  # interval.
+  ( GIT_TERMINAL_PROMPT=0 command git fetch --quiet --prune origin \
+      </dev/null >/dev/null 2>&1 & ) >/dev/null 2>&1
+}
+
 bureau_git_prompt() {
   # git status doubles as the "are we in a repo at all" check, so there is no
   # separate rev-parse. Non-git folders fail here and print nothing.
   local status_out
   status_out="$(command git status --porcelain -b 2>/dev/null)" || return
   [[ "$(command git config --get oh-my-zsh.hide-info 2>/dev/null)" == 1 ]] && return
+
+  _bureau_maybe_fetch
 
   local -a lines=("${(@f)status_out}")
   local branchline="${lines[1]}" branch
