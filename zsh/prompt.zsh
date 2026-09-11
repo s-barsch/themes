@@ -32,8 +32,8 @@
 _BUREAU_OK="${CC[success]:-#4eba65}"       # success -- clean and in sync
 _BUREAU_WARN="${CC[warning]:-#ffc107}"     # warning -- uncommitted changes
 _BUREAU_OFF="${CC[error]:-#ff6b80}"        # error -- out of sync with a remote
-_BUREAU_DIM="${CC[subtle]:-#505050}"       # the brackets
-_BUREAU_TEXT="${CC[text]:-#ffffff}"        # the line you type on
+_BUREAU_DIM="${CC[subtle]:-#505050}"       # the user@host prefix
+_BUREAU_TEXT="${CC[text]:-#ffffff}"        # the line you type on, and the brackets
 _BUREAU_PATH="${CC[suggestion]:-#b1b9f9}"  # the working directory
 _BUREAU_ERR="${CC[error]:-#ff6b80}"        # root
 
@@ -179,9 +179,9 @@ bureau_git_prompt() {
   inner+="%f"
   (( dirty ))  && inner+=" %F{$_BUREAU_WARN}~%f"
 
-  local out="%F{$_BUREAU_DIM}[%f${inner}%F{$_BUREAU_DIM}]%f"
+  local out="%F{$_BUREAU_TEXT}[%f${inner}%F{$_BUREAU_TEXT}]%f"
   (( behind_base )) && \
-    out+=" %F{$_BUREAU_DIM}[%f%F{$colour}${base_name:gs/%/%%} ${behind_base}↓%f%F{$_BUREAU_DIM}]%f"
+    out+=" %F{$_BUREAU_TEXT}[%f%F{$colour}${base_name:gs/%/%%} ${behind_base}↓%f%F{$_BUREAU_TEXT}]%f"
 
   print -n "$out"
 }
