@@ -16,14 +16,15 @@
 #     fetch to keep the numbers honest -- see _bureau_maybe_fetch below
 #   - the ~ is always warning amber; it is the thing carrying the "you have
 #     uncommitted work" signal, so the branch name does not have to
-#   - branch name is not bold, and is coloured by state:
-#       success = clean and in sync
-#       text    = uncommitted changes, but nothing to push or pull -- plain
-#                 white, because the amber ~ next to it already says it
-#       error   = out of sync -- ahead of or behind the upstream, or the
-#                 base branch has moved on. Out of sync outranks dirty:
-#                 messy work in your tree is normal, drift from the
-#                 remote is the thing worth a red light.
+#   - branch name is not bold, and says one thing: the state of the tree
+#       success = clean
+#       text    = uncommitted changes -- plain white, because the amber ~
+#                 next to it already says it
+#   - drift from a remote is carried by the arrows, not the branch name: the
+#     1↑ / 1↓ counts, and the ↓ in the base bracket, are the only things
+#     that go error red. A name that changed colour could only ever say
+#     "something is out of sync"; the arrow that turns red says which way
+#     and by how much, and leaves the name free to keep reporting the tree.
 #   - the $ is a %
 #
 # Colours come from $CC (palette.zsh); the literals are the same
@@ -167,21 +168,19 @@ bureau_git_prompt() {
     fi
   fi
 
-  # Escalating, in order: dirty drops the green, drift from a remote goes red.
-  # The ~ keeps its own amber either way, so it reads even on a red branch.
+  # The name tracks the tree and nothing else: dirty drops the green. Drift
+  # rides on the arrows below, so the two signals never overwrite each other.
   local colour="$_BUREAU_OK"
   (( dirty )) && colour="$_BUREAU_TEXT"
-  (( ahead || behind || behind_base )) && colour="$_BUREAU_OFF"
 
-  local inner="%F{$colour}${branch:gs/%/%%}"   # a % in a branch is not an escape
-  (( ahead ))  && inner+=" ${ahead}↑"
-  (( behind )) && inner+=" ${behind}↓"
-  inner+="%f"
+  local inner="%F{$colour}${branch:gs/%/%%}%f"   # a % in a branch is not an escape
+  (( ahead ))  && inner+=" %F{$_BUREAU_OFF}${ahead}↑%f"
+  (( behind )) && inner+=" %F{$_BUREAU_OFF}${behind}↓%f"
   (( dirty ))  && inner+=" %F{$_BUREAU_WARN}~%f"
 
   local out="%F{$_BUREAU_TEXT}[%f${inner}%F{$_BUREAU_TEXT}]%f"
   (( behind_base )) && \
-    out+=" %F{$_BUREAU_TEXT}[%f%F{$colour}${base_name:gs/%/%%} ${behind_base}↓%f%F{$_BUREAU_TEXT}]%f"
+    out+=" %F{$_BUREAU_TEXT}[${base_name:gs/%/%%} %f%F{$_BUREAU_OFF}${behind_base}↓%f%F{$_BUREAU_TEXT}]%f"
 
   print -n "$out"
 }
