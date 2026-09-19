@@ -4,6 +4,7 @@
 #   1. the plugins, if the rc has not already loaded them
 #   2. palette.zsh, which overrides plugin styles, so it must follow them
 #   3. prompt.zsh, which reads the $CC palette that palette.zsh defines
+#   4. keys.zsh, which binds a plugin widget, so it follows the plugins too
 #
 # Everything is sourced straight out of the repo, so editing a file here takes
 # effect in the next shell -- there is nothing to reinstall after a git pull.
@@ -33,6 +34,9 @@ _themes_plugin() {
 source "$_themes_dir/palette.zsh"
 source "$_themes_dir/prompt.zsh"
 source "$_themes_dir/palette-check.zsh"
+
+# --- keys -------------------------------------------------------------------
+source "$_themes_dir/keys.zsh"
 
 # GNU ls needs the flag spelled out; BSD ls reads $CLICOLOR, set in palette.zsh.
 [[ $OSTYPE == linux* ]] && alias ls='ls --color=auto'
