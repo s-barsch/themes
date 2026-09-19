@@ -14,6 +14,8 @@
 #   - every count is read from refs/remotes/origin/*, which nothing in git
 #     refreshes on its own, so the segment runs its own throttled background
 #     fetch to keep the numbers honest -- see _bureau_maybe_fetch below
+#   - every git call runs with GIT_OPTIONAL_LOCKS=0, so drawing the prompt can
+#     never take .git/index.lock out from under a command you are running
 #   - the ~ is always warning amber; it is the thing carrying the "you have
 #     uncommitted work" signal, so the branch name does not have to
 #   - branch name is not bold, and is green on exactly one condition:
@@ -135,6 +137,20 @@ _bureau_maybe_fetch() {
 }
 
 bureau_git_prompt() {
+  # Every git call the prompt makes is a read, and none of them may take a
+  # lock. Left alone, `git status` opportunistically writes the index back out
+  # to save the stat info it just refreshed, and writing the index means taking
+  # .git/index.lock. A prompt draws in every tab, in repos you are also working
+  # in, so that becomes a race the prompt usually wins: your own `git add` or
+  # `git commit` finds the lock held and dies with "Unable to create
+  # '.git/index.lock': File exists". GIT_OPTIONAL_LOCKS=0 is git's own answer
+  # -- the same switch editors set for their git integrations. The refresh
+  # still happens, it just is not written back, so the whole cost is that the
+  # next status re-stats the tree. Exported, so the git children see it;
+  # function-local, so it also covers _bureau_base_ref and _bureau_maybe_fetch
+  # below and expires with the prompt, leaving your own commands untouched.
+  local -x GIT_OPTIONAL_LOCKS=0
+
   # git status doubles as the "are we in a repo at all" check, so there is no
   # separate rev-parse. Non-git folders fail here and print nothing.
   local status_out
