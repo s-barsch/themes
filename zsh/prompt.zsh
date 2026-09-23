@@ -23,7 +23,7 @@
 #                 pull, and the base has not moved. Green is the all-clear,
 #                 so anything at all to deal with takes it away.
 #       text    = everything else -- uncommitted changes, or an arrow of any
-#                 kind. Plain white, because the amber ~ and the red arrows
+#                 kind. Plain text colour, because the amber ~ and the red arrows
 #                 next to it already say which it is.
 #   - how far out of sync you are is carried by the arrows alone: the 1↑ / 1↓
 #     counts, and the ↓ in the base bracket, are the only things that go
@@ -31,16 +31,32 @@
 #     says which way and by how much.
 #   - the $ is a %
 #
-# Colours come from $CC (palette.zsh); the literals are the same
-# values, kept as fallbacks so the theme also works if the palette is absent.
+# Colours come from $CC (palette.zsh), which holds the light or the dark set
+# depending on the Mac's appearance; the literals are the dark values, kept as
+# fallbacks so the theme also works if the palette is absent.
 
-_BUREAU_OK="${CC[success]:-#4eba65}"       # success -- clean and in sync
-_BUREAU_WARN="${CC[warning]:-#ffc107}"     # warning -- uncommitted changes
-_BUREAU_OFF="${CC[error]:-#ff6b80}"        # error -- out of sync with a remote
-_BUREAU_DIM="${CC[subtle]:-#505050}"       # the user@host prefix
-_BUREAU_TEXT="${CC[text]:-#ffffff}"        # the line you type on, and the brackets
-_BUREAU_PATH="${CC[suggestion]:-#b1b9f9}"  # the working directory
-_BUREAU_ERR="${CC[error]:-#ff6b80}"        # root
+# Set from $CC, and set again whenever palette.zsh switches appearance, so the
+# prompt follows the Mac between light and dark without a new shell.
+bureau_colours() {
+  _BUREAU_OK="${CC[success]:-#4eba65}"       # success -- clean and in sync
+  _BUREAU_WARN="${CC[warning]:-#ffc107}"     # warning -- uncommitted changes
+  _BUREAU_OFF="${CC[error]:-#ff6b80}"        # error -- out of sync with a remote
+  _BUREAU_DIM="${CC[subtle]:-#505050}"       # the user@host prefix
+  _BUREAU_TEXT="${CC[text]:-#ffffff}"        # the line you type on, and the brackets
+  _BUREAU_PATH="${CC[suggestion]:-#b1b9f9}"  # the working directory
+  _BUREAU_ERR="${CC[error]:-#ff6b80}"        # root
+
+  if (( EUID == 0 )); then
+    _USERNAME="%B%F{$_BUREAU_ERR}%n@%m%f%b"
+    _LIBERTY="%F{$_BUREAU_ERR}#%f"
+  else
+    _USERNAME="%F{$_BUREAU_DIM}%n@%m%f"
+    _LIBERTY="%F{$_BUREAU_TEXT}%%%f"
+  fi
+  _PATH="%F{$_BUREAU_PATH}%~%f"
+  _1LEFT="$_USERNAME $_PATH"
+  PROMPT="%F{$_BUREAU_TEXT}>%f $_LIBERTY "
+}
 
 ### Git [feature 1↑ ~] [main 3↓]
 
@@ -187,7 +203,7 @@ bureau_git_prompt() {
   fi
 
   # Green is the all-clear and nothing less earns it: uncommitted work or an
-  # arrow of any kind drops the name to white. Which one it is, and how far,
+  # arrow of any kind drops the name to plain text. Which one it is, and how far,
   # is left to the amber ~ and the red arrows -- the name only says "look".
   local colour="$_BUREAU_OK"
   (( dirty || ahead || behind || behind_base )) && colour="$_BUREAU_TEXT"
@@ -206,16 +222,7 @@ bureau_git_prompt() {
 
 ### Prompt
 
-if (( EUID == 0 )); then
-  _USERNAME="%B%F{$_BUREAU_ERR}%n@%m%f%b"
-  _LIBERTY="%F{$_BUREAU_ERR}#%f"
-else
-  _USERNAME="%F{$_BUREAU_DIM}%n@%m%f"
-  _LIBERTY="%F{$_BUREAU_TEXT}%%%f"
-fi
-_PATH="%F{$_BUREAU_PATH}%~%f"
-
-_1LEFT="$_USERNAME $_PATH"
+bureau_colours
 
 bureau_precmd() {
   print
@@ -223,7 +230,6 @@ bureau_precmd() {
 }
 
 setopt prompt_subst
-PROMPT="%F{$_BUREAU_TEXT}>%f $_LIBERTY "
 RPROMPT='$(bureau_git_prompt)'
 
 autoload -U add-zsh-hook

@@ -19,7 +19,7 @@ selection-foreground = #ffffff
 
 # Normal colours. Slots 4 and 6 are the two that plain (non-bold) ls output
 # reaches, so they carry the colours ls needs: 4 folders, 6 executables.
-# 5 is symlinks. 0 black, 1 red, 2 green, 3 yellow, 7 inactive.
+# 5 is symlinks. 0 surface, 1 red, 2 green, 3 yellow, 7 inactive.
 palette = 0=#262626
 palette = 1=#dc2626
 palette = 2=#16a34a

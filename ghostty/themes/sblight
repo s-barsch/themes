@@ -1,33 +1,40 @@
 # sblight
 #
 # The light counterpart to sbdark, for `theme = light:sblight,dark:sbdark`.
+# Every slot means the same thing it does in sbdark -- only the colour moves,
+# to the light column of the same Claude Code token -- so ls and the prompt
+# read correctly whichever appearance the Mac is in.
 
 background = #ffffff
 foreground = #000000
 
+# red, with the glyph under the block cursor knocked out in white
 cursor-color = #dc2626
 cursor-text = #ffffff
 
 selection-background = #b4d5ff
 selection-foreground = #000000
 
-# Normal: 0 text, 1 error, 2 success, 3 warning,
-# 4 blue, 5 purple, 6 teal, 7 inactive
-palette = 0=#000000
-palette = 1=#ab2b3f
-palette = 2=#2c7a39
-palette = 3=#966c1e
+# Normal colours. Slots 4 and 6 are the two that plain (non-bold) ls output
+# reaches, so they carry the colours ls needs: 4 folders, 6 executables.
+# 5 is symlinks. 0 surface, 1 red, 2 green, 3 yellow, 7 inactive.
+palette = 0=#f5f5f5
+palette = 1=#dc2626
+palette = 2=#16a34a
+palette = 3=#ca8a04
 palette = 4=#5769f7
-palette = 5=#8700ff
-palette = 6=#006666
+palette = 5=#827dbd
+palette = 6=#ff6a00
 palette = 7=#666666
 
-# Bright: 8 subtle, 9-13 the saturated set, 14 cyan, 15 inverse text
+# Bright colours: the status set.
+# 8 subtle, 9 error, 10 success, 11 warning, 12 blue, 13 purple,
+# 14 cyan, 15 text.
 palette = 8=#afafaf
-palette = 9=#dc2626
-palette = 10=#16a34a
-palette = 11=#ca8a04
-palette = 12=#6a9bcc
-palette = 13=#827dbd
-palette = 14=#009999
-palette = 15=#ffffff
+palette = 9=#ab2b3f
+palette = 10=#2c7a39
+palette = 11=#966c1e
+palette = 12=#5769f7
+palette = 13=#8700ff
+palette = 14=#0891b2
+palette = 15=#000000
