@@ -134,7 +134,8 @@ if [ "$DO_GHOSTTY" -eq 1 ]; then
 
   write_block "$GCFG" "# Managed by $(tilde "$REPO")/install.sh -- re-run to update, uninstall.sh to remove.
 # Last block wins in Ghostty, so this overrides any theme set above.
-theme = sbdark"
+# Follows the macOS appearance; the shell switches its colours to match.
+theme = light:sblight,dark:sbdark"
 
   if [ "$DRY" -eq 0 ] && command -v ghostty >/dev/null; then
     if ghostty +validate-config >/dev/null 2>&1; then
